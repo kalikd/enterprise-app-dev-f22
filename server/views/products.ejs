@@ -1,0 +1,14 @@
+
+    <%-include('./layouts/header')%>
+    <%-include('./layouts/navbar')%>
+    <h1>Hello <%=name %>!</h1>
+    <ul>
+        <%
+        for(let i=0;i<products.length;i++){
+            %>
+            <li><%=products[i]%></li>
+        <%
+    }
+        %>
+    </ul>
+    <%-include('./layouts/footer')%>

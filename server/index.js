@@ -58,17 +58,29 @@ require('dotenv').config()
 
 const express = require('express')
 const path = require('path')
+const ejs = require('ejs')
 
-const app = express()
+const app = express();
 
+app.use(express.static('public'))
+app.set('view engine', 'ejs')
+
+app.get('/products', function(req, res){
+    const products = ['Macbook', 'iPhone', 'iPod', 'Android', 'BlackBerry', 'Windows Phone', 'Huaweii', 'Pizxels']
+    res.render('products',{name:"EJS!",products})
+})
+
+app.get('/home', function(req, res){
+    res.render('home')
+})
 app.get('/about', function(req, res){
-    //res.json({name:'Ali'})
-    res.sendFile(path.resolve(__dirname,'about.html'))
+    res.render('about')
 })
 
 app.listen(process.env.PORT,function(){
     console.log('Express listening on port '+process.env.PORT)
 })
+
 
 
 

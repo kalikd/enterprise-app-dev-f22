@@ -1,0 +1,14 @@
+h1{
+    color: tomato !important;
+}
+
+.nav > li > a{
+    text-decoration: none;
+
+}
+
+.nav > li{
+    display:inline-block;
+   
+    padding: 5px;
+}
