@@ -59,8 +59,11 @@ require('dotenv').config()
 const express = require('express')
 const path = require('path')
 const ejs = require('ejs')
+const mongoose = require('mongoose')
 
 const app = express();
+
+mongoose.connect('mongodb://127.0.0.1:27017/mera-db')
 
 app.use(express.static('public'))
 app.set('view engine', 'ejs')
