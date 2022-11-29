@@ -1,0 +1,14 @@
+
+    <%-include('./layouts/header')%>
+    <%-include('./layouts/navbar')%>
+    <ul>
+        <%
+        for(let i=0;i<players.length;i++){
+            const { _id, name, role, score } = players[i]
+            %>
+            <li><a href="/player/<%=_id%>"><%=name%>- Role: <%=role%> Score - <%=score%> </a></li>
+        <%
+    }
+        %>
+    </ul>
+    <%-include('./layouts/footer')%>

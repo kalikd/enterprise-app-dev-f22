@@ -60,6 +60,7 @@ const express = require('express')
 const path = require('path')
 const ejs = require('ejs')
 const mongoose = require('mongoose')
+const Player = require('./models/Player')
 
 const app = express();
 
@@ -68,9 +69,30 @@ mongoose.connect('mongodb://127.0.0.1:27017/mera-db')
 app.use(express.static('public'))
 app.set('view engine', 'ejs')
 
-app.get('/products', function(req, res){
-    const products = ['Macbook', 'iPhone', 'iPod', 'Android', 'BlackBerry', 'Windows Phone', 'Huaweii', 'Pizxels']
-    res.render('products',{name:"EJS!",products})
+app.get('/players', async function(req, res){
+    const players = await Player.find({});
+    res.render('player',{ players })
+})
+
+app.get('/player/create', function(req, res){
+
+        Player.create({
+            name: 'Ahmed',
+            country: 'Pakistan',
+            playerType: 'Bowler',
+            role: 'M',
+            score: 35,
+            ranking: 120,
+        }, function(err, result) {
+            console.log(err);
+        })
+    
+    res.redirect('/players')
+})
+
+app.get('/players/:id', async function(req, res){
+    const player = await Player.findById(req.params.id);
+    res.render('playerDetails', {player})
 })
 
 app.get('/home', function(req, res){
