@@ -61,6 +61,8 @@ const path = require('path')
 const ejs = require('ejs')
 const mongoose = require('mongoose')
 const Player = require('./models/Player')
+//const bodyparser = require('body-parser')
+const playerValidationMiddleware = require('./middleware/playerDataValidation')
 
 const app = express();
 
@@ -68,26 +70,29 @@ mongoose.connect('mongodb://127.0.0.1:27017/mera-db')
 
 app.use(express.static('public'))
 app.set('view engine', 'ejs')
+//app.use(express.json())
+app.use(express.urlencoded())
+//app.use(bodyparser.json())
 
 app.get('/players', async function(req, res){
     const players = await Player.find({});
     res.render('player',{ players })
 })
 
-app.get('/player/create', function(req, res){
-
-        Player.create({
-            name: 'Ahmed',
-            country: 'Pakistan',
-            playerType: 'Bowler',
-            role: 'M',
-            score: 35,
-            ranking: 120,
-        }, function(err, result) {
+app.post('/player/create', playerValidationMiddleware, function(req, res){
+        console.log('Data=>',req.body)
+        Player.create(req.body, function(err, result) {
+            if(!err){
+                return res.redirect('/players')
+            }
             console.log(err);
+
         })
     
-    res.redirect('/players')
+})
+
+app.get('/player/new', async function(req, res){
+    res.render('newPlayer')
 })
 
 app.get('/players/:id', async function(req, res){

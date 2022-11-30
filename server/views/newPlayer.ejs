@@ -1,0 +1,36 @@
+<%-include('./layouts/header')%>
+<%-include('./layouts/navbar')%>
+<h3>Welcome to Player Registration!</h3>
+
+<div>
+    <form method="POST" action="/player/create">
+        <div>
+            <label>Player Name:</label>
+            <input type="text" name="name" placeholder="Enter data">
+        </div>
+        <div>
+            <label>Player Country:</label>
+            <input type="text" name="country" placeholder="Enter data">
+        </div>
+        <div>
+            <label>Player Type:</label>
+            <select name="playerType">
+                <option>Bowler</option>
+                <option>Bats man</option>
+                <option>All rounder</option>
+            </select>
+        </div>
+        <div>
+            <label>Player Score:</label>
+            <input type="number" name="score" placeholder="Enter data">
+        </div>
+        <div>
+            <label>Player Ranking:</label>
+            <input type="number" name="ranking" placeholder="Enter data">
+        </div>
+        <input type="submit" value="Save">
+    </form>
+
+</div>
+
+<%-include('./layouts/footer')%>
