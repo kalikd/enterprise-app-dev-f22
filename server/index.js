@@ -61,8 +61,12 @@ const path = require('path')
 const ejs = require('ejs')
 const mongoose = require('mongoose')
 const Player = require('./models/Player')
+const User = require('./models/User')
+const bcrypt = require('bcrypt');
+const expressSession = require('express-session');
 //const bodyparser = require('body-parser')
 const playerValidationMiddleware = require('./middleware/playerDataValidation')
+const { env } = require('process')
 
 const app = express();
 
@@ -70,6 +74,10 @@ mongoose.connect('mongodb://127.0.0.1:27017/mera-db')
 
 app.use(express.static('public'))
 app.set('view engine', 'ejs')
+app.use(expressSession({
+    secret:process.env.SECRET_KEY
+}))
+
 //app.use(express.json())
 app.use(express.urlencoded())
 //app.use(bodyparser.json())
@@ -91,8 +99,49 @@ app.post('/player/create', playerValidationMiddleware, function(req, res){
     
 })
 
+app.get('/login', async function(req, res){
+    res.render('login')
+})
+
+app.post('/authenticate', function(req, res){
+   const {username, password} = req.body;
+
+   User.findOne({username: username}, function(err,user){
+        if(!!user){
+            bcrypt.compare(password, user.password, function(err, same){
+                if(same){
+                    req.session.uid = user._id
+                    console.log(req.session)
+                    return res.redirect('/players')
+                }
+                res.redirect('/login')
+            })
+        }
+   })
+
+
+
+})
+
 app.get('/player/new', async function(req, res){
     res.render('newPlayer')
+})
+
+app.get('/signup', async function(req, res){
+    console.log('working')
+    res.render('signup')
+})
+
+app.post('/user/create', function(req, res){
+   
+    User.create(req.body, function(err, result) {
+        if(!err){
+            return res.redirect('/login')
+        }
+        console.log(err);
+
+    })
+
 })
 
 app.get('/players/:id', async function(req, res){
