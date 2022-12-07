@@ -66,6 +66,11 @@ const bcrypt = require('bcrypt');
 const expressSession = require('express-session');
 //const bodyparser = require('body-parser')
 const playerValidationMiddleware = require('./middleware/playerDataValidation')
+const authRedirectMiddleware = require('./middleware/authRedirectMiddleware')
+const authIsLoggedInMiddleware = require('./middleware/authIsLoggedInMiddleware')
+const generalSessionMiddleware = require('./middleware/generalSessionMiddleware')
+const { logout } = require('./controllers/Auth')
+const { getPlayers } = require('./controllers/Players')
 const { env } = require('process')
 
 const app = express();
@@ -82,26 +87,30 @@ app.use(expressSession({
 app.use(express.urlencoded())
 //app.use(bodyparser.json())
 
-app.get('/players', async function(req, res){
-    const players = await Player.find({});
-    res.render('player',{ players })
-})
+global.isLoggedIn = false
+
+app.get('/players', authRedirectMiddleware, getPlayers)
 
 app.post('/player/create', playerValidationMiddleware, function(req, res){
-        console.log('Data=>',req.body)
+        
         Player.create(req.body, function(err, result) {
             if(!err){
                 return res.redirect('/players')
             }
-            console.log(err);
+            const validationError = Object.keys(err.errors).map(key=> err.errors[key].message)
+            
+            req.session.validationError = validationError
+            res.redirect('/player/new')
 
         })
     
 })
 
-app.get('/login', async function(req, res){
+app.get('/login', authIsLoggedInMiddleware, async function(req, res){
     res.render('login')
 })
+
+app.get('/logout', logout)
 
 app.post('/authenticate', function(req, res){
    const {username, password} = req.body;
@@ -110,6 +119,7 @@ app.post('/authenticate', function(req, res){
         if(!!user){
             bcrypt.compare(password, user.password, function(err, same){
                 if(same){
+                    isLoggedIn = true;
                     req.session.uid = user._id
                     console.log(req.session)
                     return res.redirect('/players')
@@ -119,15 +129,13 @@ app.post('/authenticate', function(req, res){
         }
    })
 
-
-
 })
 
-app.get('/player/new', async function(req, res){
-    res.render('newPlayer')
+app.get('/player/new', authRedirectMiddleware, async function(req, res){
+    res.render('newPlayer',{ errors: req.session.validationError })
 })
 
-app.get('/signup', async function(req, res){
+app.get('/signup', authIsLoggedInMiddleware, async function(req, res){
     console.log('working')
     res.render('signup')
 })
@@ -144,17 +152,20 @@ app.post('/user/create', function(req, res){
 
 })
 
-app.get('/players/:id', async function(req, res){
+app.get('/players/:id', authRedirectMiddleware, async function(req, res){
     const player = await Player.findById(req.params.id);
     res.render('playerDetails', {player})
 })
 
-app.get('/home', function(req, res){
+app.get('/home', authRedirectMiddleware, function(req, res){
     res.render('home')
 })
-app.get('/about', function(req, res){
+app.get('/about', authRedirectMiddleware, function(req, res){
     res.render('about')
 })
+
+//app.use('*', generalSessionMiddleware)
+
 
 app.listen(process.env.PORT,function(){
     console.log('Express listening on port '+process.env.PORT)

@@ -7,12 +7,7 @@ module.exports = function(req, res, next){
         playerType, 
         ranking
     } = req.body;
-    if(!name || 
-        !country || 
-        !score || 
-        !role || 
-        !playerType || 
-        !ranking){
+    if(!country){
             return res.redirect('/player/new')
     }
     next()
