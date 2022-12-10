@@ -72,6 +72,7 @@ const generalSessionMiddleware = require('./middleware/generalSessionMiddleware'
 const { logout } = require('./controllers/Auth')
 const { getPlayers } = require('./controllers/Players')
 const { env } = require('process')
+const flash = require('connect-flash')
 
 const app = express();
 
@@ -82,6 +83,8 @@ app.set('view engine', 'ejs')
 app.use(expressSession({
     secret:process.env.SECRET_KEY
 }))
+
+app.use(flash())
 
 //app.use(express.json())
 app.use(express.urlencoded())
@@ -99,7 +102,8 @@ app.post('/player/create', playerValidationMiddleware, function(req, res){
             }
             const validationError = Object.keys(err.errors).map(key=> err.errors[key].message)
             
-            req.session.validationError = validationError
+            //req.session.validationError = validationError
+            req.flash('validationError', validationError)
             res.redirect('/player/new')
 
         })
@@ -115,6 +119,10 @@ app.get('/logout', logout)
 app.post('/authenticate', function(req, res){
    const {username, password} = req.body;
 
+   /* Checking if the user exists in the database. If it does, it is comparing the password entered by
+   the user with the password stored in the database. If they match, it is setting the session id
+   and redirecting the user to the players page. If they don't match, it is redirecting the user to
+   the login page. */
    User.findOne({username: username}, function(err,user){
         if(!!user){
             bcrypt.compare(password, user.password, function(err, same){
@@ -131,8 +139,12 @@ app.post('/authenticate', function(req, res){
 
 })
 
+/* A route handler. It is a function that will be called when a request is made to the server with the
+path `/player/new`. */
 app.get('/player/new', authRedirectMiddleware, async function(req, res){
-    res.render('newPlayer',{ errors: req.session.validationError })
+    res.render('newPlayer',{ 
+        errors: req.flash('validationError')//req.session.validationError 
+    })
 })
 
 app.get('/signup', authIsLoggedInMiddleware, async function(req, res){
@@ -146,7 +158,7 @@ app.post('/user/create', function(req, res){
         if(!err){
             return res.redirect('/login')
         }
-        console.log(err);
+        console.log('ABC=>',err._message);
 
     })
 
